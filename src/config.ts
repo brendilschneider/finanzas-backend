@@ -1,0 +1,1 @@
+export const JWT_SECRET = "super_secreto_123_clave_segura"; //TODO - it's just a dummy example
