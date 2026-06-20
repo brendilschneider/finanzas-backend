@@ -1,11 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateUserDTO } from '../DTO/createUser.dto';
 import { UserEntity } from './user.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import {sign} from 'jsonwebtoken';
+import { sign } from 'jsonwebtoken';
 import { JWT_SECRET } from 'src/config';
 import { UserResponse } from 'src/types/userResponse.interface';
+import { LoginUserDTO } from 'src/DTO/loginUser.dto';
+import { compare } from 'bcrypt';
 
 @Injectable()
 export class UserService {
@@ -15,6 +17,16 @@ export class UserService {
     ) {}
 
     async createUser(createUserDTO: CreateUserDTO): Promise<UserEntity> {
+        const userByEmail = await this.userRepository.findOne({
+            where: {email: createUserDTO.email}
+        });
+        const userByUsername = await this.userRepository.findOne({
+            where: {username: createUserDTO.username}
+        });
+         if(userByEmail || userByUsername) {
+            throw new HttpException('Email or username are taken', 
+            HttpStatus.UNPROCESSABLE_ENTITY);
+        }
         const newUser = new UserEntity();
         Object.assign(newUser, createUserDTO);
         return await this.userRepository.save(newUser);
@@ -42,4 +54,35 @@ export class UserService {
             }
         }
     }
+
+    async findById(id: number): Promise<UserEntity | null> {
+        const user = await this.userRepository.findOne({ where: { id } });
+        return user;
+    }
+
+    async login(loginDTO: LoginUserDTO): Promise<UserEntity> {
+        const user = await this.userRepository.findOne({
+            where: {email: loginDTO.email},
+            select: {
+                id: true,
+                username: true,
+                email: true,
+                name: true,
+                surname: true,
+                bio: true,
+                image: true,
+                password: true 
+            }
+        });
+        if (!user) {
+            throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
+        }
+        const isPasswordCorrect = await compare(loginDTO.password, user.password);
+        if (!isPasswordCorrect) {
+            throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
+        }
+        const { password, ...result } = user;
+        return result as UserEntity;
+    }
+
 }
