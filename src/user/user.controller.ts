@@ -1,9 +1,12 @@
-import { Body, Controller, Get, HttpException, HttpStatus, Post, Req, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, HttpException, HttpStatus, Post, Put, Req, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDTO } from '../DTO/createUser.dto';
 import { UserResponse } from 'src/types/userResponse.interface';
 import { LoginUserDTO } from 'src/DTO/loginUser.dto';
-import type { ExpressRequest } from 'src/types/expressRequest.interface';
+import { User } from 'src/decorators/user.decorator';
+import { UserEntity } from './user.entity';
+import { AuthGuard } from 'src/guards/auth.guard';
+import { UpdateUserDTO } from 'src/DTO/updateUser.dto';
 
 @Controller('users')
 export class UserController {
@@ -25,11 +28,16 @@ export class UserController {
     }
 
     @Get('user')
-    async currentUser(@Req() request: ExpressRequest): Promise<UserResponse> {
-        if (!request.user) {
-            throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-        }
-        return this.userService.buildUserResponse(request.user);
+    @UseGuards(AuthGuard)
+    async currentUser(@User() user: UserEntity): Promise<UserResponse> {
+        return this.userService.buildUserResponse(user);
+    }
+
+    @Put('user')
+    @UseGuards(AuthGuard)
+    async updateCurrentUser(@User('id') id: number, @Body('user') updateUserDTO: UpdateUserDTO): Promise<UserResponse> {
+        const updatedUser = await this.userService.updateCurrentUser(id, updateUserDTO);
+        return this.userService.buildUserResponse(updatedUser);
     }
 
 }
