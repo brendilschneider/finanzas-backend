@@ -1,5 +1,5 @@
 import { CanActivate, ExecutionContext, HttpException, HttpStatus } from "@nestjs/common";
-import { ExpressRequest } from "src/types/expressRequest.interface";
+import { ExpressRequest } from "src/common/types/expressRequest.interface";
 
 export class AuthGuard implements CanActivate {
 

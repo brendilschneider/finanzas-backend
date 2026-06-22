@@ -1,12 +1,12 @@
 import { Body, Controller, Get, HttpException, HttpStatus, Post, Put, Req, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserDTO } from '../DTO/createUser.dto';
-import { UserResponse } from 'src/types/userResponse.interface';
-import { LoginUserDTO } from 'src/DTO/loginUser.dto';
-import { User } from 'src/decorators/user.decorator';
+import { CreateUserDTO } from '../../common/DTO/createUser.dto';
+import { UserResponse } from 'src/common/types/userResponse.interface';
+import { LoginUserDTO } from 'src/common/DTO/loginUser.dto';
+import { User } from 'src/common/decorators/user.decorator';
 import { UserEntity } from './user.entity';
-import { AuthGuard } from 'src/guards/auth.guard';
-import { UpdateUserDTO } from 'src/DTO/updateUser.dto';
+import { AuthGuard } from 'src/common/guards/auth.guard';
+import { UpdateUserDTO } from 'src/common/DTO/updateUser.dto';
 
 @Controller('users')
 export class UserController {
